@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie CRUD with LocalStorage</title>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    table, th, td {
+      border: 1px solid black;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+    }
+    button {
+      margin: 0 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Movie CRUD Application</h1>
+  
+  <form id="movieForm">
+    <input type="hidden" id="movieIndex" value="">
+    <label for="movieName">Movie Name:</label>
+    <input type="text" id="movieName" required>
+    <button type="submit">Save</button>
+  </form>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Movie Name</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="movieTableBody"></tbody>
+  </table>
+
+  <script>
+    const loadMovies = () => {
+      const movies = JSON.parse(localStorage.getItem('movies')) || [];
+      return movies;
+    };
+
+    const saveMovies = (movies) => {
+      localStorage.setItem('movies', JSON.stringify(movies));
+    };
+
+    const renderMovies = () => {
+      const movies = loadMovies();
+      const movieTableBody = document.getElementById('movieTableBody');
+      movieTableBody.innerHTML = ''; 
+
+      movies.forEach((movie, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${movie}</td>
+          <td>
+            <button onclick="editMovie(${index})">Edit</button>
+            <button onclick="deleteMovie(${index})">Delete</button>
+          </td>
+        `;
+        movieTableBody.appendChild(row);
+      });
+    };
+
+    const addOrUpdateMovie = (event) => {
+      event.preventDefault();
+      const movieName = document.getElementById('movieName').value.trim();
+      const movieIndex = document.getElementById('movieIndex').value;
+      if (!movieName) return alert('Please enter a movie name.');
+
+      const movies = loadMovies();
+      if (movieIndex) {
+        movies[movieIndex] = movieName;
+      } else {
+        movies.push(movieName);
+      }
+      saveMovies(movies);
+      renderMovies();
+      document.getElementById('movieForm').reset();
+    };
+
+    const editMovie = (index) => {
+      const movies = loadMovies();
+      document.getElementById('movieName').value = movies[index];
+      document.getElementById('movieIndex').value = index;
+    };
+
+    const deleteMovie = (index) => {
+      const movies = loadMovies();
+      movies.splice(index, 1);
+      saveMovies(movies);
+      renderMovies();
+    };
+
+    document.getElementById('movieForm').addEventListener('submit', addOrUpdateMovie);
+    renderMovies();
+  </script>
+</body>
+</html>
